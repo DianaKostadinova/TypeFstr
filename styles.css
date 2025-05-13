@@ -1,0 +1,218 @@
+﻿:root {
+    --dark-blue: #0a192f;
+    --medium-blue: #172a45;
+    --light-blue: #64ffda;
+    --pink: #ff6ec7;
+    --text-color: #ccd6f6;
+    --text-secondary: #8892b0;
+    --sidebar-width: 300px;
+}
+
+body {
+    font-family: 'Roboto Mono', monospace;
+    background-color: var(--dark-blue);
+    color: var(--text-color);
+    margin: 0;
+    padding: 0;
+    display: flex;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.main-content {
+    flex: 1;
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+    animation: fadeIn 0.8s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+select, button, input[type="text"] {
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid var(--light-blue);
+    background-color: var(--medium-blue);
+    color: var(--text-color);
+}
+
+button {
+    background-color: var(--light-blue);
+    color: var(--dark-blue);
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+    button:hover {
+        background-color: var(--pink);
+        color: var(--dark-blue);
+        transform: scale(1.05);
+    }
+
+.stats {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+    background: var(--medium-blue);
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.text-display {
+    background: var(--medium-blue);
+    padding: 15px;
+    border-radius: 4px;
+    min-height: 100px;
+    margin-bottom: 10px;
+    font-size: 1.1em;
+}
+
+.user-input {
+    width: 100%;
+    padding: 10px;
+    font-size: 1.1em;
+    background-color: var(--medium-blue);
+    border: 1px solid var(--light-blue);
+    color: var(--text-color);
+    border-radius: 4px;
+}
+
+.correct {
+    color: var(--light-blue);
+}
+
+.incorrect {
+    color: #ff5555;
+    text-decoration: underline;
+}
+
+.current {
+    background-color: rgba(100, 255, 218, 0.2);
+    border-radius: 4px;
+    padding: 2px 4px;
+}
+
+.result {
+    display: none;
+    padding: 15px;
+    background: var(--medium-blue);
+    text-align: center;
+    border-radius: 4px;
+    margin-top: 10px;
+}
+
+.sidebar {
+    width: var(--sidebar-width);
+    background-color: var(--medium-blue);
+    padding: 15px;
+    position: fixed;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    overflow-y: auto;
+    z-index: 100;
+    border-left: 2px solid var(--light-blue);
+}
+/* Leaderboard Styles */
+#leaderboard {
+    margin-top: 20px;
+    width: 100%;
+    max-width: 800px;
+    background: #1e2a3a;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.leaderboard-header {
+    display: grid;
+    grid-template-columns: 50px 2fr 1fr 1fr 2fr;
+    font-weight: bold;
+    padding: 10px 0;
+    border-bottom: 1px solid #64ffda;
+    margin-bottom: 10px;
+}
+.chart-container {
+    width: 100%;
+    max-width: 800px;
+    height: 300px;
+    margin: 20px auto;
+    background: white;
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.chart-container {
+    width: 100%;
+    max-width: 400px; /* Reduced from 800px */
+    height: 200px; /* Reduced from 300px */
+    margin: 10px auto;
+    background: white;
+    border-radius: 8px;
+    padding: 5px; /* Reduced padding */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+#performanceChart {
+    width: 800px !important;
+    height: 550px !important;
+}
+
+    .leaderboard-entry:hover {
+        background: rgba(100, 255, 218, 0.1);
+    }
+
+    .leaderboard-entry .rank {
+        font-weight: bold;
+        text-align: center;
+    }
+
+    .leaderboard-entry.podium-1 {
+        color: gold;
+        font-weight: bold;
+    }
+
+    .leaderboard-entry.podium-2 {
+        color: silver;
+        font-weight: bold;
+    }
+
+    .leaderboard-entry.podium-3 {
+        color: #cd7f32; /* bronze */
+        font-weight: bold;
+    }
+
+/* Chart Styles */
+#performanceChart {
+    margin-top: 20px;
+    background: #1e2a3a;
+    border-radius: 8px;
+    padding: 15px;
+}
+
+canvas {
+    background-color: var(--medium-blue);
+    border-radius: 4px;
+    padding: 10px;
+    margin-top: 15px;
+}
