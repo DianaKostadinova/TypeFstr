@@ -216,3 +216,65 @@ canvas {
     padding: 10px;
     margin-top: 15px;
 }
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    body {
+        flex-direction: column;
+    }
+
+    .main-content {
+        padding: 10px;
+        width: 95%;
+    }
+
+    .sidebar {
+        position: static;
+        width: 100%;
+        border-left: none;
+        border-top: 2px solid var(--light-blue);
+    }
+
+    .controls {
+        flex-direction: column;
+    }
+
+    #performanceChart {
+        width: 100% !important;
+        height: 250px !important;
+    }
+
+    .leaderboard-header {
+        grid-template-columns: 30px 2fr 1fr 1fr;
+    }
+
+    .leaderboard-header span:nth-child(5),
+    .leaderboard-entry span:nth-child(5) {
+        display: none;
+    }
+
+    .stats {
+        flex-direction: column;
+        gap: 5px;
+    }
+}
+
+@media (max-width: 480px) {
+    .leaderboard-header {
+        grid-template-columns: 25px 1fr 1fr;
+        font-size: 0.8em;
+    }
+
+    .leaderboard-header span:nth-child(4),
+    .leaderboard-entry span:nth-child(4) {
+        display: none;
+    }
+
+    .text-display {
+        font-size: 0.9em;
+        min-height: 80px;
+    }
+
+    .user-input {
+        font-size: 0.9em;
+    }
+}
