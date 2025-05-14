@@ -1,10 +1,30 @@
 
+try {
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+} catch (error) {
+    console.error("Firebase initialization error:", error);
+    
+    window.db = {
+        ref: () => ({
+            push: (data) => {
+                const scores = JSON.parse(localStorage.getItem('typingScores') || []);
+                scores.push(data);
+                localStorage.setItem('typingScores', JSON.stringify(scores));
+            },
+            orderByChild: () => ({
+                limitToLast: () => ({
+                    once: (type, callback) => {
+                        const scores = JSON.parse(localStorage.getItem('typingScores') || []);
+                        callback({ forEach: (fn) => scores.reverse().forEach(fn) });
+                    }
+                })
+            })
+        })
+    };
+}
 
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
 
-// DOM Elements
 const textDisplay = document.getElementById("textDisplay");
 const userInput = document.getElementById("userInput");
 const startBtn = document.getElementById("startBtn");
@@ -79,41 +99,48 @@ function initChart() {
     });
 }
 
-// Update Chart with new WPM score
-function updateChart(wpm) {
-    const label = `Test ${chart.data.labels.length + 1}`;
-
-    chart.data.labels.push(label);
-    chart.data.datasets[0].data.push(wpm);
-
-    // Limit to 10 most recent attempts
-    if (chart.data.labels.length > 10) {
-        chart.data.labels.shift();
-        chart.data.datasets[0].data.shift();
-    }
-
-    chart.update();
-}
-
-// Load words for selected language
+// Load words for selected language with multiple path fallbacks
 async function loadWords(language) {
     try {
-        const response = await fetch(`./data/${language}_words.txt`);
-        const data = await response.text();
-        const words = data.split(/\s+/).filter(word => word.length > 0);
-        const shuffled = words.sort(() => 0.5 - Math.random());
-        return shuffled.slice(0, 25).join(" ");
+        // Try multiple possible paths
+        const pathsToTry = [
+            `./data/${language}_words.txt`,
+            `/${language}_words.txt`,
+            `./${language}_words.txt`,
+            `https://raw.githubusercontent.com/yourusername/yourrepo/main/data/${language}_words.txt`
+        ];
+
+        let error;
+        for (const path of pathsToTry) {
+            try {
+                const response = await fetch(path);
+                if (response.ok) {
+                    const data = await response.text();
+                    const words = data.split(/\s+/).filter(word => word.length > 0);
+                    const shuffled = words.sort(() => 0.5 - Math.random());
+                    return shuffled.slice(0, 25).join(" ");
+                }
+            } catch (e) {
+                error = e;
+                continue;
+            }
+        }
+
+        throw error || new Error("Failed to load words from all paths");
     } catch (error) {
         console.error("Error loading words:", error);
-        return "The quick brown fox jumps over the lazy dog"; // Fallback text
+        // Fallback text with more words
+        return "The quick brown fox jumps over the lazy dog ".repeat(5).trim();
     }
 }
 
-// Start the typing test
+// Start the typing test with loading states
 async function startGame() {
-    playerName = usernameInput.value.trim() || playerName;
+    startBtn.disabled = true;
+    startBtn.textContent = "Loading...";
 
     try {
+        playerName = usernameInput.value.trim() || playerName;
         text = await loadWords(languageSelect.value);
         renderText();
 
@@ -136,25 +163,32 @@ async function startGame() {
         // Focus input after a small delay
         setTimeout(() => {
             userInput.focus();
+            if ('virtualKeyboard' in navigator) {
+                navigator.virtualKeyboard.show();
+            }
         }, 100);
 
     } catch (error) {
         console.error("Error starting game:", error);
         alert("Failed to start game. Please try again.");
+    } finally {
+        startBtn.disabled = false;
+        startBtn.textContent = "Start";
     }
 }
 
-// Render the text to be typed
+// Render the text to be typed with character spans
 function renderText() {
     textDisplay.innerHTML = text.split("").map((c, i) =>
         `<span id="char-${i}">${c}</span>`
     ).join("");
 }
 
-// Handle user input
+// Handle user input with real-time accuracy calculation
 userInput.addEventListener("input", (e) => {
     const val = userInput.value;
     let correctChars = 0;
+    let totalTypedChars = val.length;
 
     // Update character highlighting
     for (let i = 0; i < text.length; i++) {
@@ -177,6 +211,12 @@ userInput.addEventListener("input", (e) => {
         }
     }
 
+    // Update real-time accuracy
+    const currentAccuracy = totalTypedChars > 0
+        ? Math.round((correctChars / totalTypedChars) * 100)
+        : 0;
+    accuracyDisplay.textContent = currentAccuracy;
+
     // Check if text is completed
     if (val === text) {
         finishGame(correctChars, text.length);
@@ -184,9 +224,6 @@ userInput.addEventListener("input", (e) => {
 });
 
 // Finish the game and show results
-// ... (keep all your existing Firebase and variable declarations)
-
-// Modified finishGame function with proper accuracy calculation
 function finishGame(correctChars, totalChars) {
     clearInterval(timer);
     userInput.disabled = true;
@@ -194,7 +231,7 @@ function finishGame(correctChars, totalChars) {
     // Calculate WPM and accuracy
     const wordCount = text.split(" ").length;
     const minutes = time / 60;
-    const wpm = Math.round((wordCount / minutes) * 100) / 100; // Keep 2 decimal places
+    const wpm = Math.round((wordCount / minutes) * 100) / 100;
     const accuracy = totalChars > 0 ? Math.round((correctChars / totalChars) * 100) : 0;
 
     // Update displays
@@ -203,11 +240,11 @@ function finishGame(correctChars, totalChars) {
     result.textContent = `Finished! WPM: ${wpm}, Accuracy: ${accuracy}%`;
     result.style.display = "block";
 
-    // Save score with proper accuracy
+    // Save score
     const entry = {
-        name: playerName,
-        wpm,
-        accuracy,  // Now using the properly calculated value
+        name: playerName.substring(0, 20),
+        wpm: Math.round(wpm),
+        accuracy: Math.round(accuracy),
         timestamp: Date.now(),
         date: new Date().toLocaleString()
     };
@@ -218,81 +255,23 @@ function finishGame(correctChars, totalChars) {
     updateLeaderboard();
 }
 
+// Update Chart with new WPM score
+function updateChart(wpm) {
+    const label = `Test ${chart.data.labels.length + 1}`;
 
-userInput.addEventListener("input", (e) => {
-    const val = userInput.value;
-    let correctChars = 0;
-    let totalTypedChars = val.length;
+    chart.data.labels.push(label);
+    chart.data.datasets[0].data.push(wpm);
 
-    for (let i = 0; i < text.length; i++) {
-        const span = document.getElementById(`char-${i}`);
-        if (!span) continue;
-
-        span.classList.remove("correct", "incorrect", "current");
-
-        if (i < val.length) {
-            if (val[i] === text[i]) {
-                span.classList.add("correct");
-                correctChars++;
-            } else {
-                span.classList.add("incorrect");
-            }
-        }
-
-        if (i === val.length) {
-            span.classList.add("current");
-        }
+    // Limit to 10 most recent attempts
+    if (chart.data.labels.length > 10) {
+        chart.data.labels.shift();
+        chart.data.datasets[0].data.shift();
     }
 
-   
-    const currentAccuracy = totalTypedChars > 0
-        ? Math.round((correctChars / totalTypedChars) * 100)
-        : 0;
-    accuracyDisplay.textContent = currentAccuracy;
-
- 
-    if (val === text) {
-        finishGame(correctChars, text.length);
-    }
-});
-
-
-function calculateWPM() {
-    const wordCount = text.split(" ").length;
-    const minutes = time / 60;
-    return Math.round(wordCount / minutes);
+    chart.update();
 }
 
-
-function saveScore(wpm, accuracy) {
-    // Add client-side validation
-    if (typeof wpm !== 'number' || wpm > 300 || wpm < 0) return;
-    if (typeof accuracy !== 'number' || accuracy > 100 || accuracy < 0) return;
-
-    const entry = {
-        name: playerName.substring(0, 20), 
-        wpm: Math.round(wpm),
-        accuracy: Math.round(accuracy),
-        timestamp: Date.now(),
-        date: new Date().toLocaleString(),
-        verified: false 
-    };
-
-    db.ref("scores").push(entry)
-        .catch(error => console.error("Save failed:", error));
-}
-
-    
-    playerScores.push({
-        wpm,
-        date: new Date().toLocaleTimeString()
-    });
-
-  
-    db.ref("scores").push(entry);
-}
-
-
+// Update leaderboard from Firebase
 function updateLeaderboard() {
     db.ref("scores")
         .orderByChild("wpm")
@@ -312,7 +291,6 @@ function updateLeaderboard() {
             });
 
             entries.sort((a, b) => b.wpm - a.wpm);
-
             renderLeaderboard(entries);
         });
 }
@@ -337,14 +315,23 @@ function renderLeaderboard(entries) {
     `;
 }
 
-
+// Initialize the application
 function init() {
     startBtn.addEventListener("click", startGame);
     usernameInput.value = playerName;
     initChart();
     updateLeaderboard();
 
+    // Update leaderboard every 5 seconds
     leaderboardInterval = setInterval(updateLeaderboard, 5000);
+
+    // Mobile keyboard support
+    if ('virtualKeyboard' in navigator) {
+        userInput.addEventListener('focus', () => {
+            navigator.virtualKeyboard.show();
+        });
+    }
 }
 
+// Start the app when DOM is loaded
 document.addEventListener("DOMContentLoaded", init);
