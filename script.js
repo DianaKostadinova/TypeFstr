@@ -1,4 +1,4 @@
-﻿
+
 
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
@@ -98,7 +98,7 @@ function updateChart(wpm) {
 // Load words for selected language
 async function loadWords(language) {
     try {
-        const response = await fetch(`${language}_words.txt`);
+        const response = await fetch(`./data/${language}_words.txt`);
         const data = await response.text();
         const words = data.split(/\s+/).filter(word => word.length > 0);
         const shuffled = words.sort(() => 0.5 - Math.random());
