@@ -138,6 +138,18 @@ async function loadWords(language) {
 async function startGame() {
     startBtn.disabled = true;
     startBtn.textContent = "Loading...";
+    if (!confirm("Continue previous test?")) {
+        clearGameState();
+    }
+    if (loadGameState()) {
+        userInput.disabled = false;
+        timer = setInterval(() => {
+            time++;
+            timeDisplay.textContent = time;
+            saveGameState(); // Auto-save every second
+        }, 1000);
+        return;
+    }
 
     try {
         playerName = usernameInput.value.trim() || playerName;
@@ -175,9 +187,10 @@ async function startGame() {
         startBtn.disabled = false;
         startBtn.textContent = "Start";
     }
+    saveGameState();
 }
 
-// Render the text to be typed with character spans
+
 function renderText() {
     textDisplay.innerHTML = text.split("").map((c, i) =>
         `<span id="char-${i}">${c}</span>`
@@ -248,14 +261,26 @@ function finishGame(correctChars, totalChars) {
         timestamp: Date.now(),
         date: new Date().toLocaleString()
     };
-
-    // Update chart and leaderboard
+    const progressHistory = JSON.parse(localStorage.getItem('progressHistory') || '[]');
+    progressHistory.push({
+        wpm,
+        accuracy,
+        date: new Date().toISOString(),
+        textLength: text.length
+    });
+    localStorage.setItem('progressHistory', JSON.stringify(progressHistory));
     updateChart(wpm);
     db.ref("scores").push(entry);
     updateLeaderboard();
+    clearGameState();
 }
-
-// Update Chart with new WPM score
+function showProgressHistory() {
+    const history = JSON.parse(localStorage.getItem('progressHistory') || []);
+    if (history.length > 0) {
+        console.log("Your progress history:", history);
+        // You could render this to a progress chart
+    }
+}
 function updateChart(wpm) {
     const label = `Test ${chart.data.labels.length + 1}`;
 
@@ -270,33 +295,89 @@ function updateChart(wpm) {
 
     chart.update();
 }
+// Save game state
+function saveGameState() {
+    const gameState = {
+        text,
+        userInput: userInput.value,
+        time,
+        cursorPosition: userInput.selectionStart,
+        wpm: wpmDisplay.textContent,
+        accuracy: accuracyDisplay.textContent,
+        timestamp: Date.now()
+    };
+    localStorage.setItem('typingTestState', JSON.stringify(gameState));
+}
 
-// Update leaderboard from Firebase
+function loadGameState() {
+    const savedState = localStorage.getItem('typingTestState');
+    if (!savedState) return false;
+
+    const state = JSON.parse(savedState);
+
+   
+    if (Date.now() - state.timestamp > 3600000) {
+        localStorage.removeItem('typingTestState');
+        return false;
+    }
+
+    text = state.text;
+    time = state.time;
+    renderText();
+    userInput.value = state.userInput;
+    timeDisplay.textContent = state.time;
+    wpmDisplay.textContent = state.wpm;
+    accuracyDisplay.textContent = state.accuracy;
+
+    setTimeout(() => {
+        userInput.selectionStart = state.cursorPosition;
+        userInput.selectionEnd = state.cursorPosition;
+    }, 0);
+
+    return true;
+}
+
+// Clear game state
+function clearGameState() {
+    localStorage.removeItem('typingTestState');
+}
 function updateLeaderboard() {
+    console.log("Attempting to fetch leaderboard data...");
+
     db.ref("scores")
         .orderByChild("wpm")
         .limitToLast(10)
-        .once("value", (snapshot) => {
+        .once("value")
+        .then((snapshot) => {
+            console.log("Received data:", snapshot.val());
             const entries = [];
 
             snapshot.forEach((child) => {
                 const val = child.val();
                 entries.push({
                     key: child.key,
-                    name: val.name,
-                    wpm: val.wpm,
-                    accuracy: val.accuracy,
-                    date: val.date || new Date(val.timestamp).toLocaleString()
+                    name: val.name || "Anonymous",
+                    wpm: val.wpm || 0,
+                    accuracy: val.accuracy || 0,
+                    date: val.date || new Date(val.timestamp || Date.now()).toLocaleString()
                 });
             });
 
             entries.sort((a, b) => b.wpm - a.wpm);
             renderLeaderboard(entries);
+        })
+        .catch((error) => {
+            console.error("Leaderboard error:", error);
+            leaderboard.innerHTML = `<div class="error">Could not load leaderboard. ${error.message}</div>`;
         });
 }
 
-// Render leaderboard HTML
 function renderLeaderboard(entries) {
+    if (entries.length === 0) {
+        leaderboard.innerHTML = `<div class="empty">No scores yet. Be the first!</div>`;
+        return;
+    }
+
     leaderboard.innerHTML = `
         <div class="leaderboard-header">
             <span>Rank</span>
@@ -329,8 +410,15 @@ function init() {
     if ('virtualKeyboard' in navigator) {
         userInput.addEventListener('focus', () => {
             navigator.virtualKeyboard.show();
+            saveGameState(); 
         });
     }
+    window.addEventListener('load', () => {
+        if (loadGameState()) {
+            startBtn.textContent = "Continue Test";
+        }
+    });
+    window.addEventListener('beforeunload', saveGameState);
 }
 
 // Start the app when DOM is loaded
