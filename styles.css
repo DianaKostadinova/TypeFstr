@@ -1,17 +1,7 @@
-:root {
-    --dark-blue: #0a192f;
-    --medium-blue: #172a45;
-    --light-blue: #64ffda;
-    --pink: #ff6ec7;
-    --text-color: #ccd6f6;
-    --text-secondary: #8892b0;
-    --sidebar-width: 300px;
-}
-
 body {
     font-family: 'Roboto Mono', monospace;
-    background-color: var(--dark-blue);
-    color: var(--text-color);
+    background-color: #0a192f;
+    color: #ccd6f6;
     margin: 0;
     padding: 0;
     display: flex;
@@ -49,22 +39,22 @@ body {
 select, button, input[type="text"] {
     padding: 10px;
     border-radius: 4px;
-    border: 1px solid var(--light-blue);
-    background-color: var(--medium-blue);
-    color: var(--text-color);
+    border: 1px solid #64ffda;
+    background-color: #172a45;
+    color: #ccd6f6;
 }
 
 button {
-    background-color: var(--light-blue);
-    color: var(--dark-blue);
+    background-color: #64ffda;
+    color: #0a192f;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
 }
 
     button:hover {
-        background-color: var(--pink);
-        color: var(--dark-blue);
+        background-color: #ff6ec7;
+        color: #0a192f;
         transform: scale(1.05);
     }
 
@@ -72,13 +62,13 @@ button {
     display: flex;
     justify-content: space-around;
     margin-bottom: 20px;
-    background: var(--medium-blue);
+    background: #172a45;
     padding: 10px;
     border-radius: 4px;
 }
 
 .text-display {
-    background: var(--medium-blue);
+    background: #172a45;
     padding: 15px;
     border-radius: 4px;
     min-height: 100px;
@@ -90,14 +80,14 @@ button {
     width: 100%;
     padding: 10px;
     font-size: 1.1em;
-    background-color: var(--medium-blue);
-    border: 1px solid var(--light-blue);
-    color: var(--text-color);
+    background-color: #172a45;
+    border: 1px solid #64ffda;
+    color: #ccd6f6;
     border-radius: 4px;
 }
 
 .correct {
-    color: var(--light-blue);
+    color: #64ffda;
 }
 
 .incorrect {
@@ -114,15 +104,15 @@ button {
 .result {
     display: none;
     padding: 15px;
-    background: var(--medium-blue);
+    background: #172a45;
     text-align: center;
     border-radius: 4px;
     margin-top: 10px;
 }
 
 .sidebar {
-    width: var(--sidebar-width);
-    background-color: var(--medium-blue);
+    width: 300px;
+    background-color: #172a45;
     padding: 15px;
     position: fixed;
     right: 0;
@@ -130,12 +120,12 @@ button {
     bottom: 0;
     overflow-y: auto;
     z-index: 100;
-    border-left: 2px solid var(--light-blue);
+    border-left: 2px solid #64ffda;
 }
-/* Leaderboard Styles */
+
 #leaderboard {
     margin-top: 20px;
-    width:250px;
+    width: 250px;
     max-width: 400px;
     background: #1e2a3a;
     border-radius: 8px;
@@ -145,94 +135,55 @@ button {
 
 .leaderboard-header {
     display: grid;
-    grid-template-columns: 50px 2fr 1fr 1fr 2fr;
+    grid-template-columns: 50px 2fr 1fr 1fr;
     font-weight: bold;
     padding: 10px 0;
     border-bottom: 1px solid #64ffda;
     margin-bottom: 10px;
 }
-.chart-container {
-    width: 100%;
-    max-width: 800px;
-    height: 300px;
-    margin: 20px auto;
-    background: white;
-    border-radius: 8px;
-    padding: 10px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+.leaderboard-entry:hover {
+    background: rgba(100, 255, 218, 0.1);
+}
+
+.leaderboard-entry .rank {
+    font-weight: bold;
+    text-align: center;
+}
+
+.leaderboard-entry.podium-1 {
+    color: gold;
+    font-weight: bold;
+}
+
+.leaderboard-entry.podium-2 {
+    color: silver;
+    font-weight: bold;
+}
+
+.leaderboard-entry.podium-3 {
+    color: #cd7f32;
+    font-weight: bold;
 }
 
 .chart-container {
     width: 100%;
-    max-width: 400px; /* Reduced from 800px */
-    height: 200px; 
+    max-width: 400px;
+    height: 200px;
     margin: 10px auto;
     background: white;
     border-radius: 8px;
-    padding: 5px; /* Reduced padding */
+    padding: 5px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-#performanceChart {
-    width: 800px !important;
-    height: 280px !important;
-}
-
-    .leaderboard-entry:hover {
-        background: rgba(100, 255, 218, 0.1);
-    }
-
-    .leaderboard-entry .rank {
-        font-weight: bold;
-        text-align: center;
-    }
-
-    .leaderboard-entry.podium-1 {
-        color: gold;
-        font-weight: bold;
-    }
-
-    .leaderboard-entry.podium-2 {
-        color: silver;
-        font-weight: bold;
-    }
-
-    .leaderboard-entry.podium-3 {
-        color: #cd7f32; /* bronze */
-        font-weight: bold;
-    }
-
-/* Chart Styles */
-#performanceChart {
-    margin-top: 20px;
-    background: #1e2a3a;
-    border-radius: 8px;
-    padding: 15px;
-}
-
 canvas {
-    background-color: var(--medium-blue);
+    background-color: #172a45;
     border-radius: 4px;
     padding: 10px;
     margin-top: 15px;
 }
-/* Resume prompt styling */
-#resumePrompt {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: var(--medium-blue);
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 20px rgba(0,0,0,0.5);
-    z-index: 1000;
-    display: none;
-}
 
-    #resumePrompt button {
-        margin: 10px;
-    }
 @media (max-width: 768px) {
     body {
         flex-direction: column;
@@ -247,30 +198,25 @@ canvas {
         position: static;
         width: 100%;
         border-left: none;
-        border-top: 2px solid var(--light-blue);
+        border-top: 2px solid #64ffda;
     }
 
     .controls {
         flex-direction: column;
     }
 
-    #performanceChart {
-        width: 100% !important;
-        height: 250px !important;
-    }
-
-    .leaderboard-header {
-        grid-template-columns: 30px 2fr 1fr 1fr;
-    }
-
-        .leaderboard-header span:nth-child(5),
-        .leaderboard-entry span:nth-child(5) {
-            display: none;
-        }
-
     .stats {
         flex-direction: column;
         gap: 5px;
+    }
+
+    .text-display {
+        font-size: 0.9em;
+        min-height: 80px;
+    }
+
+    .user-input {
+        font-size: 0.9em;
     }
 }
 
@@ -280,17 +226,11 @@ canvas {
         font-size: 0.8em;
     }
 
-        .leaderboard-header span:nth-child(4),
-        .leaderboard-entry span:nth-child(4) {
-            display: none;
-        }
-
     .text-display {
-        font-size: 0.9em;
-        min-height: 80px;
+        font-size: 0.85em;
     }
 
     .user-input {
-        font-size: 0.9em;
+        font-size: 0.85em;
     }
 }
