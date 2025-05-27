@@ -1,20 +1,15 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TypeFstr</title>
     <link rel="stylesheet" href="styles.css" />
-    <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="shortcut icon" href="/favicon.ico" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <link rel="manifest" href="/site.webmanifest" />
     <script defer src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script defer src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script defer src="script.js"></script>
     <script defer src="config.js"></script>
+    <script defer src="script.js"></script>
 </head>
 <body>
     <div class="main-content">
@@ -27,21 +22,18 @@
             <button id="startBtn">Start</button>
             <input type="text" id="usernameInput" placeholder="Enter name (optional)" />
         </div>
-
         <div class="stats">
             <div>Time: <span id="time">0</span>s</div>
             <div>WPM: <span id="wpm">0</span></div>
             <div>Accuracy: <span id="accuracy">0</span>%</div>
         </div>
-
         <div id="textDisplay" class="text-display"></div>
         <textarea id="userInput" class="user-input" disabled placeholder="Start typing here..."></textarea>
-
         <div id="result" class="result"></div>
-
-        <canvas id="performanceChart"></canvas>
+        <div class="chart-container">
+            <canvas id="performanceChart"></canvas>
+        </div>
     </div>
-
     <aside class="sidebar">
         <div class="sidebar-header">
             <h3>Leaderboard</h3>
